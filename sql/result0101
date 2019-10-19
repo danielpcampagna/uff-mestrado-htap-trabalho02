@@ -1,0 +1,125 @@
+sqlite> .open denverdb
+sqlite> 
+sqlite> .timer on
+sqlite> 
+sqlite> DROP TABLE IF EXISTS crimestst01;
+Run Time: real 0.169 user 0.032000 sys 0.048000
+sqlite> 
+sqlite> -- Julian time to Epoch MS     
+sqlite> SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+1571396785209
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> CREATE TABLE crimestst01 AS SELECT * FROM crimes WHERE GEO_LAT IS NOT NULL AND GEO_LAT != "" AND GEO_LON IS NOT NULL AND GEO_LON != "";
+Run Time: real 2.775 user 0.624000 sys 0.496000
+sqlite> 
+sqlite> -- Julian time to Epoch MS     
+sqlite> SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+1571396787984
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> SELECT (SELECT count(*) FROM crimes) - (SELECT count(*) FROM crimestst01);
+4239
+Run Time: real 0.111 user 0.028000 sys 0.084000
+sqlite> 
+sqlite> -- Julian time to Epoch MS     
+sqlite> SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+1571396788097
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> BEGIN;
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> PRAGMA temp_store = 2;
+Run Time: real 0.001 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> CREATE TEMP TABLE _variables(name TEXT PRIMARY KEY, value REAL);
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> INSERT INTO _variables (name) VALUES ('max_lat');
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> UPDATE _variables SET value = (SELECT (SELECT MAX(GEO_LAT) FROM crimestst01 LIMIT 1)) WHERE name = 'max_lat';
+Run Time: real 0.110 user 0.072000 sys 0.036000
+sqlite> 
+sqlite> INSERT INTO _variables (name) VALUES ('min_lat');
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> UPDATE _variables SET value = (SELECT (SELECT MIN(GEO_LAT) FROM crimestst01 LIMIT 1)) WHERE name = 'min_lat';
+Run Time: real 0.103 user 0.052000 sys 0.052000
+sqlite> 
+sqlite> INSERT INTO _variables (name) VALUES ('max_lon');
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> UPDATE _variables SET value = (SELECT (SELECT MAX(GEO_LON) FROM crimestst01 LIMIT 1)) WHERE name = 'max_lon';
+Run Time: real 0.103 user 0.048000 sys 0.056000
+sqlite> 
+sqlite> INSERT INTO _variables (name) VALUES ('min_lon');
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> UPDATE _variables SET value = (SELECT (SELECT MIN(GEO_LON) FROM crimestst01 LIMIT 1)) WHERE name = 'min_lon';
+Run Time: real 0.101 user 0.052000 sys 0.048000
+sqlite> 
+sqlite> INSERT INTO _variables (name) VALUES ('mean_lat');
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> UPDATE _variables SET value = (SELECT ((SELECT value FROM _variables WHERE name = 'max_lat' LIMIT 1) + (SELECT value FROM _variables WHERE name = 'min_lat' LIMIT 1)) / 2) WHERE name = 'mean_lat';
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> INSERT INTO _variables (name) VALUES ('mean_lon');
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> UPDATE _variables SET value = (SELECT ((SELECT value FROM _variables WHERE name = 'max_lon' LIMIT 1) + (SELECT value FROM _variables WHERE name = 'min_lon' LIMIT 1)) / 2) WHERE name = 'mean_lon';
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> -- Julian time to Epoch MS     
+sqlite> SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+1571396788519
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> ALTER TABLE crimestst01 ADD COLUMN region text default "";
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> UPDATE crimestst01
+   ...>     SET region = "A"
+   ...>     WHERE GEO_LAT < (SELECT value FROM _variables WHERE name = "mean_lat" limit 1)
+   ...>         AND GEO_LON < (SELECT value FROM _variables WHERE name = "mean_lon" limit 1);
+Run Time: real 0.134 user 0.092000 sys 0.044000
+sqlite> 
+sqlite> UPDATE crimestst01
+   ...>     SET region = "B"
+   ...>     WHERE GEO_LAT < (SELECT value FROM _variables WHERE name = "mean_lat" limit 1)
+   ...>         AND GEO_LON >= (SELECT value FROM _variables WHERE name = "mean_lon" limit 1);
+Run Time: real 0.210 user 0.136000 sys 0.072000
+sqlite> 
+sqlite> UPDATE crimestst01
+   ...>     SET region = "C"
+   ...>     WHERE GEO_LAT >= (SELECT value FROM _variables WHERE name = "mean_lat" limit 1) AND GEO_LON < (SELECT value FROM _variables WHERE name = "mean_lon" limit 1);
+Run Time: real 6.469 user 0.776000 sys 2.136000
+sqlite> 
+sqlite> UPDATE crimestst01
+   ...>     SET region = "D"
+   ...>     WHERE GEO_LAT >= (SELECT value FROM _variables WHERE name = "mean_lat" limit 1)
+   ...>         AND GEO_LON >= (SELECT value FROM _variables WHERE name = "mean_lon" limit 1);
+Run Time: real 0.254 user 0.192000 sys 0.060000
+sqlite> 
+sqlite> -- Julian time to Epoch MS     
+sqlite> SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+1571396795589
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> SELECT region, count(*) from crimestst01 group by region;
+B|174
+C|508241
+Run Time: real 0.337 user 0.248000 sys 0.092000
+sqlite> 
+sqlite> -- Julian time to Epoch MS     
+sqlite> SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+1571396795928
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> select * from _variables;
+max_lat|39.9043105
+min_lat|1.2e-06
+max_lon|-115.4640602
+min_lon|-1.3e-06
+mean_lat|19.95215585
+mean_lon|-57.73203075
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> END;
+Run Time: real 1.890 user 0.008000 sys 0.048000

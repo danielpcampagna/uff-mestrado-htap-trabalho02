@@ -1,0 +1,5 @@
+mongoimport -d denver -c crimes --type csv --file ./denver-crime-data/crime.csv --headerline -v
+
+sudo service mongod start
+
+mongo

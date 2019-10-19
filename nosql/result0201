@@ -1,0 +1,272 @@
+> use denver
+switched to db denver
+> db.crimestst02.drop()
+true
+> db.createCollection('crimestst02')
+{ "ok" : 1 }
+> db.crimes.find({GEO_LAT: {$nin: ["", null]}, GEO_LON: {$nin: ["", null]}}).forEach(function(doc) { db.crimestst02
+.insert(doc) });
+> db.adminCommand('top').totals["denver.crimestst02"]
+{
+        "total" : {
+                "time" : 22027142,
+                "count" : 508416
+        },
+        "readLock" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "writeLock" : {
+                "time" : 21893469,
+                "count" : 508415
+        },
+        "queries" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "getmore" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "insert" : {
+                "time" : 21893469,
+                "count" : 508415
+        },
+        "update" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "remove" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "commands" : {
+                "time" : 133673,
+                "count" : 1
+        }
+}
+> db.crimes.find().count() - db.crimestst02.find().count()
+4239
+> db.adminCommand('top').totals["denver.crimestst02"]
+{
+        "total" : {
+                "time" : 22027171,
+                "count" : 508417
+        },
+        "readLock" : {
+                "time" : 29,
+                "count" : 1
+        },
+        "writeLock" : {
+                "time" : 21893469,
+                "count" : 508415
+        },
+        "queries" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "getmore" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "insert" : {
+                "time" : 21893469,
+                "count" : 508415
+        },
+        "update" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "remove" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "commands" : {
+                "time" : 133702,
+                "count" : 2
+        }
+}
+> db.crimestst02.createIndex({ GEO_LAT:1 })
+{
+        "createdCollectionAutomatically" : false,
+        "numIndexesBefore" : 1,
+        "numIndexesAfter" : 2,
+        "ok" : 1
+}
+> db.crimestst02.createIndex({ GEO_LON:1 })
+{
+        "createdCollectionAutomatically" : false,
+        "numIndexesBefore" : 2,
+        "numIndexesAfter" : 3,
+        "ok" : 1
+}
+> const median_lat = db.crimestst02.find({}, {GEO_LAT: 1}).sort( {"GEO_LAT":1} ).skip(db.crimestst02.count() / 2 - 
+1).limit(1)[0]
+> const median_lon = db.crimestst02.find({}, {GEO_LON: 1}).sort( {"GEO_LON":1} ).skip(db.crimestst02.count() / 2 - 
+1).limit(1)[0]
+> db.adminCommand('top').totals["denver.crimestst02"]
+{
+        "total" : {
+                "time" : 26801036,
+                "count" : 508423
+        },
+        "readLock" : {
+                "time" : 360609,
+                "count" : 5
+        },
+        "writeLock" : {
+                "time" : 26306754,
+                "count" : 508417
+        },
+        "queries" : {
+                "time" : 360494,
+                "count" : 2
+        },
+        "getmore" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "insert" : {
+                "time" : 21893469,
+                "count" : 508415
+        },
+        "update" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "remove" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "commands" : {
+                "time" : 4547073,
+                "count" : 6
+        }
+}
+> db.crimestst02.update(
+...     {},
+...     { $set: {'region': '' }},
+...     { multi: true }
+... )
+WriteResult({ "nMatched" : 508415, "nUpserted" : 0, "nModified" : 508415 })
+> db.crimestst02.update({
+...     GEO_LAT: { $lt: median_lat['GEO_LAT'] }, GEO_LON: { $lt: median_lon['GEO_LON'] }
+...     }, { $set: {'region':'A'}},
+...     { multi: true }
+... )
+WriteResult({ "nMatched" : 137943, "nUpserted" : 0, "nModified" : 137943 })
+> db.crimestst02.update({
+...     GEO_LAT: { $lt: median_lat['GEO_LAT'] }, GEO_LON: { $gte: median_lon['GEO_LON'] }
+...     }, { $set: {'region':'B'}},
+...     { multi: true }
+... )
+WriteResult({ "nMatched" : 114741, "nUpserted" : 0, "nModified" : 114741 })
+> db.crimestst02.update({
+...     GEO_LAT: { $gte: median_lat['GEO_LAT'] }, GEO_LON: { $lt: median_lon['GEO_LON'] }
+...     }, { $set: {'region':'C'}},
+...     { multi: true }
+... )
+WriteResult({ "nMatched" : 116234, "nUpserted" : 0, "nModified" : 116234 })
+> db.crimestst02.update({
+...     GEO_LAT: { $gte: median_lat['GEO_LAT'] }, GEO_LON: { $gte: median_lon['GEO_LON'] }
+...     }, { $set: {'region':'D'}},
+...     { multi: true }
+... )
+WriteResult({ "nMatched" : 139497, "nUpserted" : 0, "nModified" : 139497 })
+> db.adminCommand('top').totals["denver.crimestst02"]
+{
+        "total" : {
+                "time" : 61845094,
+                "count" : 508428
+        },
+        "readLock" : {
+                "time" : 360609,
+                "count" : 5
+        },
+        "writeLock" : {
+                "time" : 61350812,
+                "count" : 508422
+        },
+        "queries" : {
+                "time" : 360494,
+                "count" : 2
+        },
+        "getmore" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "insert" : {
+                "time" : 21893469,
+                "count" : 508415
+        },
+        "update" : {
+                "time" : 35044058,
+                "count" : 5
+        },
+        "remove" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "commands" : {
+                "time" : 4547073,
+                "count" : 6
+        }
+}
+> db.crimestst02.aggregate({
+...     $group: {
+...        _id: '$region',
+...        count: { $sum: 1 }
+...     }
+... });
+{ "_id" : "A", "count" : 137943 }
+{ "_id" : "C", "count" : 116234 }
+{ "_id" : "D", "count" : 139497 }
+{ "_id" : "B", "count" : 114741 }
+> db.adminCommand('top').totals["denver.crimestst02"]
+{
+        "total" : {
+                "time" : 61845238,
+                "count" : 508429
+        },
+        "readLock" : {
+                "time" : 360753,
+                "count" : 6
+        },
+        "writeLock" : {
+                "time" : 61350812,
+                "count" : 508422
+        },
+        "queries" : {
+                "time" : 360494,
+                "count" : 2
+        },
+        "getmore" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "insert" : {
+                "time" : 21893469,
+                "count" : 508415
+        },
+        "update" : {
+                "time" : 35044058,
+                "count" : 5
+        },
+        "remove" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "commands" : {
+                "time" : 4547217,
+                "count" : 7
+        }
+}
+> median_lat['GEO_LAT']
+39.7397729
+> median_lon['GEO_LON']
+-104.9824294
+> median_lat
+{ "_id" : ObjectId("5da0dd60e66b3f01d03b1d52"), "GEO_LAT" : 39.7397729 }
+> median_lon
+{ "_id" : ObjectId("5da0dd5fe66b3f01d03aa127"), "GEO_LON" : -104.9824294 }
+> 

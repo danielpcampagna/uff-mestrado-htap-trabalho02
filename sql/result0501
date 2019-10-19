@@ -1,0 +1,94 @@
+sqlite> .open denverdb
+sqlite> 
+sqlite> .timer on
+sqlite> 
+sqlite> -- Julian time to Epoch MS     
+sqlite> SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+1571484858296
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> SELECT NEIGHBORHOOD_ID, count(*) from crimes group by NEIGHBORHOOD_ID;
+athmar-park|7279
+auraria|5089
+baker|14042
+barnum|6077
+barnum-west|3250
+bear-valley|3497
+belcaro|2583
+berkeley|4981
+capitol-hill|17697
+cbd|19024
+chaffee-park|2607
+cheesman-park|7546
+cherry-creek|5981
+city-park|2686
+city-park-west|6459
+civic-center|12324
+clayton|3611
+cole|4020
+college-view-south-platte|6609
+congress-park|5499
+cory-merrill|2644
+country-club|1229
+dia|7807
+east-colfax|13374
+elyria-swansea|7699
+five-points|26930
+fort-logan|2376
+gateway-green-valley-ranch|11003
+globeville|7898
+goldsmith|4331
+hale|3730
+hampden|8146
+hampden-south|8898
+harvey-park|5987
+harvey-park-south|4147
+highland|9263
+hilltop|3064
+indian-creek|569
+jefferson-park|4691
+kennedy|2255
+lincoln-park|13755
+lowry-field|4114
+mar-lee|7248
+marston|3800
+montbello|17441
+montclair|4290
+north-capitol-hill|9434
+north-park-hill|3756
+northeast-park-hill|9055
+overland|4753
+platt-park|3265
+regis|2698
+rosedale|1732
+ruby-hill|6118
+skyland|2067
+sloan-lake|3991
+south-park-hill|4003
+southmoor-park|2454
+speer|7918
+stapleton|22072
+sun-valley|4432
+sunnyside|6438
+union-station|12093
+university|4136
+university-hills|4277
+university-park|3564
+valverde|3658
+villa-park|7214
+virginia-village|5645
+washington-park|3131
+washington-park-west|4365
+washington-virginia-vale|7434
+wellshire|628
+west-colfax|10464
+west-highland|4785
+westwood|12601
+whittier|3093
+windsor|3830
+Run Time: real 0.433 user 0.360000 sys 0.072000
+sqlite> 
+sqlite> -- Julian time to Epoch MS     
+sqlite> SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+1571484858731
+Run Time: real 0.000 user 0.000000 sys 0.000000

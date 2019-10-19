@@ -1,0 +1,272 @@
+## MongoDB
+
+### Importing
+
+```shell
+$ mongoimport -d denver -c crimes --type csv --file crime.csv --headerline
+
+2019-10-11T16:51:43.053-0300	connected to: mongodb://localhost/
+2019-10-11T16:51:46.053-0300	[###.....................] denver.crimes	19.2MB/119MB (16.2%)
+2019-10-11T16:51:49.053-0300	[#######.................] denver.crimes	39.5MB/119MB (33.3%)
+2019-10-11T16:51:52.053-0300	[###########.............] denver.crimes	57.1MB/119MB (48.2%)
+2019-10-11T16:51:55.053-0300	[###############.........] denver.crimes	77.9MB/119MB (65.7%)
+2019-10-11T16:51:58.053-0300	[###################.....] denver.crimes	97.1MB/119MB (81.9%)
+2019-10-11T16:52:01.053-0300	[#######################.] denver.crimes	118MB/119MB (99.7%)
+2019-10-11T16:52:01.124-0300	[########################] denver.crimes	119MB/119MB (100.0%)
+2019-10-11T16:52:01.124-0300	512654 document(s) imported successfully. 0 document(s) failed to import.
+```
+### Evaluation
+
+    First of all, we need to propose a metric to evaluating our queries.
+    1. First possibility is to check average amount of crimes in each result. The best result is the one with the highest average.
+    2. check the percentage of non-crime groups (i.e. the sum is zero). The best result is the one with lower percent of non-crime groups.
+
+### Start
+
+```shell
+$ sudo service mongod start
+$ mongo
+> show dbs
+> use denver
+```
+
+### Queries
+
+#### 1. count groupBy(GEO_LON, GEO_LAT) splited by mean
+
+#### 2. count groupBy(GEO_LON, GEO_LAT) splited by median
+
+#### 3. count groupBy(DISTRICT_ID)
+
+#### 4. count groupBy(PRECINCT_ID)
+
+#### 5. count groupBy(NEIGHBORHOOD_ID)
+
+
+For this query, data was classified by its GEO_LON, GEO_LAT values.
+Firstly, we need to know the max and minimmum values stored in this base.
+Furthermore, we need to remove invalid GEO_LAT/LON (i.e. empty and null)
+
+```mongo
+> db.createCollection('crimestst01')
+{ "ok" : 1 }
+> db.crimes.find({GEO_LAT: {$nin: ["", null]}, GEO_LON: {$nin: ["", null]}}).forEach(function(doc) { db.crimestst01.insert(doc) });
+> db.adminCommand('top').totals["denver.crimestst01"]
+{
+        "total" : {
+                "time" : 25017628,
+                "count" : 508416
+        },
+        "readLock" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "writeLock" : {
+                "time" : 24888955,
+                "count" : 508415
+        },
+        "queries" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "getmore" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "insert" : {
+                "time" : 24888955,
+                "count" : 508415
+        },
+        "update" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "remove" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "commands" : {
+                "time" : 128673,
+                "count" : 1
+        }
+}
+```
+
+1) GEO_LAT (max and min):
+
+```mongo
+> db.crimestst01.find({}, {"GEO_LAT": 1}).sort({"GEO_LAT":-1}).limit(1)
+{ "_id" : ObjectId("5da0dd55e66b3f01d0365bce"), "GEO_LAT" : 39.9043105 }
+
+> db.crimestst01.find({}, {"GEO_LAT": 1}).sort({"GEO_LAT":1}).limit(1)
+{ "_id" : ObjectId("5da0dd4fe66b3f01d0338324"), "GEO_LAT" : 0.0000012 }
+```
+
+2) GEO_LON (max and min):
+
+```mongo
+> db.crimestst01.find({}, {"GEO_LON": 1}).sort({"GEO_LON":-1}).limit(1)
+{ "_id" : ObjectId("5da0dd57e66b3f01d036c90c"), "GEO_LON" : -0.0000013 }
+
+> db.crimestst01.find({}, {"GEO_LON": 1}).sort({"GEO_LON":1}).limit(1)
+{ "_id" : ObjectId("5da0dd50e66b3f01d0345481"), "GEO_LON" : -115.4640602 }
+```
+
+Now, we know GEO_LAT, GEO_LON is in [0.0000012, 39.9043105] and [-115.4640602, -0.0000013], respectively.
+Hence, it is possible to classify our data. For the purpose of these experiments, we are using 4 classes:
+
+Class A: GEO_LAT, GEO_LON is in [0.0000012, 19,95215525) and [-115.4640602, -57.7320301)
+Class B: GEO_LAT, GEO_LON is in [0.0000012, 19,95215525) and [-57.7320301, -0.0000013]
+Class C: GEO_LAT, GEO_LON is in [19,95215525, 39.9043105] and [-115.4640602, 57.7320301)
+Class D: GEO_LAT, GEO_LON is in [19,95215525, 39.9043105] and [-57.7320301, -0.0000013]
+
+```
+> db.adminCommand('top').totals["denver.crimestst01"]
+{
+        "total" : {
+                "time" : 27581212,
+                "count" : 508420
+        },
+        "readLock" : {
+                "time" : 2563584,
+                "count" : 4
+        },
+        "writeLock" : {
+                "time" : 24888955,
+                "count" : 508415
+        },
+        "queries" : {
+                "time" : 2563584,
+                "count" : 4
+        },
+        "getmore" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "insert" : {
+                "time" : 24888955,
+                "count" : 508415
+        },
+        "update" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "remove" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "commands" : {
+                "time" : 128673,
+                "count" : 1
+        }
+}
+```
+
+To do this, firstly, we need to add the new class field
+
+```
+> db.crimestst01.update(
+    {},
+    { $set: {'region': '' }}
+)
+WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
+
+> db.crimestst01.update({
+    GEO_LAT: { $gte: 0.0000012, $lt: 19.95215525 },
+    GEO_LON: { $gte: -115.4640602, $lt: -57.7320301 }
+    }, { $set: {'region':'A'}}
+)
+WriteResult({ "nMatched" : 0, "nUpserted" : 0, "nModified" : 0 })
+
+> db.crimestst01.update({
+    GEO_LAT: {$gte: 0.0000012, $lt: 19.95215525},
+    GEO_LON: {$gte: -57.7320301, $lte: -0.0000013}
+    }, { $set: {'region':'B'}}
+)
+WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
+
+> db.crimestst01.update({
+    GEO_LAT: {$gte: 19.95215525, $lte: 39.9043105},
+    GEO_LON: {$gte: -115.4640602, $lt: -57.7320301}
+    }, { $set: {'region':'C'}}
+)
+WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
+
+> db.crimestst01.update({
+    GEO_LAT: {$gte: 19.95215525, $lte: 39.9043105},
+    GEO_LON: {$gte: -57.7320301, $lte: -0.0000013}
+    }, { $set: {'region':'D'}}
+)
+WriteResult({ "nMatched" : 0, "nUpserted" : 0, "nModified" : 0 })
+
+> db.adminCommand('top').totals["denver.crimestst01"]
+{
+        "total" : {
+                "time" : 28779283,
+                "count" : 508425
+        },
+        "readLock" : {
+                "time" : 2563584,
+                "count" : 4
+        },
+        "writeLock" : {
+                "time" : 26087026,
+                "count" : 508420
+        },
+        "queries" : {
+                "time" : 2563584,
+                "count" : 4
+        },
+        "getmore" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "insert" : {
+                "time" : 24888955,
+                "count" : 508415
+        },
+        "update" : {
+                "time" : 1198071,
+                "count" : 5
+        },
+        "remove" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "commands" : {
+                "time" : 128673,
+                "count" : 1
+        }
+}
+
+> db.crimestst01.aggregate({
+    $group: {
+       _id: '$region',
+       count: { $sum: 1 }
+    }
+});
+{ "_id" : "C", "count" : 1 }
+{ "_id" : "B", "count" : 1 }
+{ "_id" : null, "count" : 508413 }
+
+> db.adminCommand('top').totals["denver.crimestst01"]
+
+```
+
+
+```
+> db.crimes.aggregate([
+    {
+        $bucket: {
+            groupBy: ["$GEO_LON", ],
+            boundaries: [ 0, 200, 400 ],
+            default: "Other",
+            output: {
+                "count": { $sum: 1 },
+                "titles" : { $push: "$title" }
+            }
+        }
+    }
+])
+```
+#### 5. count groupBy(GEO_X, GEO_Y, REPORTED_DATE(m/y)) where today() - REPORTED_DATE < 5y and IS_CRIME == 1

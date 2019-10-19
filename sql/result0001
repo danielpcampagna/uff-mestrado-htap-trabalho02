@@ -1,0 +1,43 @@
+sqlite> .open denverdb
+sqlite> 
+sqlite> select 'drop table ' || name || ';' from sqlite_master where type = 'table';
+sqlite> 
+sqlite> .mode csv
+sqlite> 
+sqlite> .timer on
+sqlite> 
+sqlite> -- Julian time to Epoch MS     
+sqlite> SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+1571394085158
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> .import ./denver-crime-data/crime.csv crimes
+sqlite> 
+sqlite> -- Julian time to Epoch MS     
+sqlite> SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+1571394091509
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> .schema crimes
+CREATE TABLE crimes(
+  "INCIDENT_ID" TEXT,
+  "OFFENSE_ID" TEXT,
+  "OFFENSE_CODE" TEXT,
+  "OFFENSE_CODE_EXTENSION" TEXT,
+  "OFFENSE_TYPE_ID" TEXT,
+  "OFFENSE_CATEGORY_ID" TEXT,
+  "FIRST_OCCURRENCE_DATE" TEXT,
+  "LAST_OCCURRENCE_DATE" TEXT,
+  "REPORTED_DATE" TEXT,
+  "INCIDENT_ADDRESS" TEXT,
+  "GEO_X" TEXT,
+  "GEO_Y" TEXT,
+  "GEO_LON" TEXT,
+  "GEO_LAT" TEXT,
+  "DISTRICT_ID" TEXT,
+  "PRECINCT_ID" TEXT,
+  "NEIGHBORHOOD_ID" TEXT,
+  "IS_CRIME" TEXT,
+  "IS_TRAFFIC" TEXT
+);
+sqlite> 

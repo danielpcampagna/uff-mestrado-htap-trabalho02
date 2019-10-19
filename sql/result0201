@@ -1,0 +1,96 @@
+sqlite> .open denverdb
+sqlite> 
+sqlite> .timer on
+sqlite> 
+sqlite> DROP TABLE IF EXISTS crimestst02;
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> -- Julian time to Epoch MS     
+sqlite> SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+1571397203211
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> CREATE TABLE crimestst02 AS SELECT * FROM crimes WHERE GEO_LAT IS NOT NULL AND GEO_LAT != "" AND GEO_LON IS NOT NULL AND GEO_LON != "";
+Run Time: real 2.713 user 0.596000 sys 0.524000
+sqlite> 
+sqlite> -- Julian time to Epoch MS     
+sqlite> SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+1571397205925
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> SELECT (SELECT count(*) FROM crimes) - (SELECT count(*) FROM crimestst02);
+4239
+Run Time: real 0.123 user 0.020000 sys 0.104000
+sqlite> 
+sqlite> BEGIN;
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> PRAGMA temp_store = 2;
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> CREATE TEMP TABLE _variables(name TEXT PRIMARY KEY, value REAL);
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> INSERT INTO _variables (name) VALUES ('median_lat');
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> UPDATE _variables SET value = (SELECT GEO_LAT FROM crimestst02 ORDER BY GEO_LAT LIMIT 1 OFFSET (SELECT COUNT(*) FROM crimestst02) / 2) WHERE name = 'median_lat';
+Run Time: real 0.976 user 0.840000 sys 0.136000
+sqlite> 
+sqlite> INSERT INTO _variables (name) VALUES ('median_lon');
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> UPDATE _variables SET value = (SELECT GEO_LON FROM crimestst02 ORDER BY GEO_LON LIMIT 1 OFFSET (SELECT COUNT(*) FROM crimestst02) / 2) WHERE name = 'median_lon';
+Run Time: real 1.156 user 1.044000 sys 0.112000
+sqlite> 
+sqlite> -- Julian time to Epoch MS     
+sqlite> SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+1571397208184
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> ALTER TABLE crimestst02 ADD COLUMN region text default "";
+Run Time: real 0.001 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> UPDATE crimestst02
+   ...>     SET region = "A"
+   ...>     WHERE GEO_LAT < (SELECT value FROM _variables WHERE name = "median_lat" limit 1)
+   ...>         AND GEO_LON < (SELECT value FROM _variables WHERE name = "median_lon" limit 1);
+Run Time: real 5.925 user 0.384000 sys 2.156000
+sqlite> 
+sqlite> UPDATE crimestst02
+   ...>     SET region = "B"
+   ...>     WHERE GEO_LAT < (SELECT value FROM _variables WHERE name = "median_lat" limit 1)
+   ...>         AND GEO_LON >= (SELECT value FROM _variables WHERE name = "median_lon" limit 1);
+Run Time: real 0.839 user 0.352000 sys 0.480000
+sqlite> 
+sqlite> UPDATE crimestst02
+   ...>     SET region = "C"
+   ...>     WHERE GEO_LAT >= (SELECT value FROM _variables WHERE name = "median_lat" limit 1) AND GEO_LON < (SELECT value FROM _variables WHERE name = "median_lon" limit 1);
+Run Time: real 0.760 user 0.272000 sys 0.488000
+sqlite> 
+sqlite> UPDATE crimestst02
+   ...>     SET region = "D"
+   ...>     WHERE GEO_LAT >= (SELECT value FROM _variables WHERE name = "median_lat" limit 1)
+   ...>         AND GEO_LON >= (SELECT value FROM _variables WHERE name = "median_lon" limit 1);
+Run Time: real 0.785 user 0.312000 sys 0.472000
+sqlite> 
+sqlite> -- Julian time to Epoch MS     
+sqlite> SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+1571397216498
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> SELECT region, count(*) from crimestst02 group by region;
+A|137943
+B|114741
+C|116234
+D|139497
+Run Time: real 0.339 user 0.292000 sys 0.048000
+sqlite>
+sqlite> -- Julian time to Epoch MS     
+sqlite> SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+1571397216786
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> select * from _variables;
+median_lat|39.7397729
+median_lon|-104.9824294
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 

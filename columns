@@ -1,0 +1,44 @@
+## crime:
+
+1)  INCIDENT_ID
+2)  OFFENSE_ID
+3)  OFFENSE_CODE
+4)  OFFENSE_CODE_EXTENSION
+5)  OFFENSE_TYPE_ID
+6)  OFFENSE_CATEGORY_ID
+7)  FIRST_OCCURRENCE_DATE
+8)  LAST_OCCURRENCE_DATE
+9)  REPORTED_DATE
+10) INCIDENT_ADDRESS
+11) GEO_X
+12) GEO_Y
+13) GEO_LON
+14) GEO_LAT
+15) DISTRICT_ID
+16) PRECINCT_ID
+17) NEIGHBORHOOD_ID
+18) IS_CRIME
+19) IS_TRAFFIC
+
+e.g.
+
+"2016376978","2016376978521300","5213","0","weapon-unlawful-discharge-of","all-other-crimes","6/15/2016 11:31:00 PM","","6/15/2016 11:31:00 PM","","3193983","1707251","-104.80988110","39.773188","5","521","montbello","1","0"
+"20186000994","20186000994239900","2399","0","theft-other","larceny","10/11/2017 12:30:00 PM","10/11/2017 4:55:00 PM","1/29/2018 5:53:00 PM","","3201943","1711852","-104.78143410","39.78564880","5","522","gateway-green-valley-ranch","1","0"
+"20166003953","20166003953230500","2305","0","theft-items-from-vehicle","theft-from-motor-vehicle","3/4/2016 8:00:00 PM","4/25/2016 8:00:00 AM","4/26/2016 9:02:00 PM","2932 S JOSEPHINE ST","3152762","1667011","-104.95738110","39.66348960","3","314","wellshire","1","0"
+
+## offense_codes
+
+1) OFFENSE_CODE
+2) OFFENSE_CODE_EXTENSION
+3) OFFENSE_TYPE_ID
+4) OFFENSE_TYPE_NAME
+5) OFFENSE_CATEGORY_ID
+6) OFFENSE_CATEGORY_NAME
+7) IS_CRIME
+8) IS_TRAFFIC
+
+e.g.
+
+"2804","1","stolen-property-possession","Possession of stolen property","all-other-crimes","All Other Crimes","1","0"
+"2804","2","fraud-possess-financial-device","Possession of a financial device","all-other-crimes","All Other Crimes","1","0"
+"2901","0","damaged-prop-bus","Damaged business property","public-disorder","Public Disorder","1","0"

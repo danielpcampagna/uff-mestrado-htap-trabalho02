@@ -1,0 +1,53 @@
+sqlite> .open denverdb
+sqlite> 
+sqlite> .timer on
+sqlite> 
+sqlite> -- Julian time to Epoch MS     
+sqlite> SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+1571484291553
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 
+sqlite> SELECT PRECINCT_ID, count(*) from crimes group by PRECINCT_ID;
+111|14221
+112|10445
+113|14047
+121|12541
+122|18440
+123|20500
+211|15357
+212|11492
+213|10579
+221|11160
+222|9976
+223|16550
+311|23421
+312|16046
+313|15006
+314|8792
+321|10795
+322|13225
+323|14724
+324|11360
+411|12789
+412|19703
+421|13333
+422|12797
+423|13820
+511|10390
+512|15267
+521|13860
+522|6827
+523|5967
+611|34794
+612|19765
+621|17230
+622|13980
+623|17495
+759|5960
+Run Time: real 0.434 user 0.336000 sys 0.060000
+sqlite> 
+sqlite> -- Julian time to Epoch MS     
+sqlite> SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+1571484291988
+Run Time: real 0.000 user 0.000000 sys 0.000000
+sqlite> 

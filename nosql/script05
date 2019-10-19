@@ -1,0 +1,7 @@
+use denver
+
+db.adminCommand('top').totals["denver.crimes"]
+
+db.crimes.aggregate([{ $group: {_id: "$NEIGHBORHOOD_ID" , total: { $sum: 1 } } }])
+
+db.adminCommand('top').totals["denver.crimes"]

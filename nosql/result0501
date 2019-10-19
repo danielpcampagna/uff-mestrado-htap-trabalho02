@@ -1,0 +1,108 @@
+> use denver
+switched to db denver
+> 
+> db.adminCommand('top').totals["denver.crimes"]
+{
+        "total" : {
+                "time" : 34243830,
+                "count" : 304
+        },
+        "readLock" : {
+                "time" : 34241490,
+                "count" : 298
+        },
+        "writeLock" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "queries" : {
+                "time" : 25961893,
+                "count" : 78
+        },
+        "getmore" : {
+                "time" : 7083178,
+                "count" : 188
+        },
+        "insert" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "update" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "remove" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "commands" : {
+                "time" : 1198759,
+                "count" : 38
+        }
+}
+> 
+> db.crimes.aggregate([{ $group: {_id: "$NEIGHBORHOOD_ID" , total: { $sum: 1 } } }])
+
+{ "_id" : "dia", "total" : 7807 }
+{ "_id" : "south-park-hill", "total" : 4003 }
+{ "_id" : "baker", "total" : 14042 }
+{ "_id" : "harvey-park-south", "total" : 4147 }
+{ "_id" : "chaffee-park", "total" : 2607 }
+{ "_id" : "five-points", "total" : 26930 }
+{ "_id" : "berkeley", "total" : 4981 }
+{ "_id" : "jefferson-park", "total" : 4691 }
+{ "_id" : "city-park", "total" : 2686 }
+{ "_id" : "lowry-field", "total" : 4114 }
+{ "_id" : "wellshire", "total" : 628 }
+{ "_id" : "valverde", "total" : 3658 }
+{ "_id" : "regis", "total" : 2698 }
+{ "_id" : "west-colfax", "total" : 10464 }
+{ "_id" : "whittier", "total" : 3093 }
+{ "_id" : "congress-park", "total" : 5499 }
+{ "_id" : "belcaro", "total" : 2583 }
+{ "_id" : "washington-virginia-vale", "total" : 7434 }
+{ "_id" : "clayton", "total" : 3611 }
+{ "_id" : "villa-park", "total" : 7214 }
+Type "it" for more
+> 
+> db.adminCommand('top').totals["denver.crimes"]
+{
+        "total" : {
+                "time" : 34244007,
+                "count" : 305
+        },
+        "readLock" : {
+                "time" : 34241667,
+                "count" : 299
+        },
+        "writeLock" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "queries" : {
+                "time" : 25961893,
+                "count" : 78
+        },
+        "getmore" : {
+                "time" : 7083178,
+                "count" : 188
+        },
+        "insert" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "update" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "remove" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "commands" : {
+                "time" : 1198936,
+                "count" : 39
+        }
+}
+> 
+> 

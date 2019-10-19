@@ -1,0 +1,78 @@
+.open denverdb
+
+.timer on
+
+DROP TABLE IF EXISTS crimestst01;
+
+-- Julian time to Epoch MS     
+SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+
+CREATE TABLE crimestst01 AS SELECT * FROM crimes WHERE GEO_LAT IS NOT NULL AND GEO_LAT != "" AND GEO_LON IS NOT NULL AND GEO_LON != "";
+
+-- Julian time to Epoch MS     
+SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+
+SELECT (SELECT count(*) FROM crimes) - (SELECT count(*) FROM crimestst01);
+
+-- Julian time to Epoch MS     
+SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+
+BEGIN;
+
+PRAGMA temp_store = 2;
+
+CREATE TEMP TABLE _variables(name TEXT PRIMARY KEY, value REAL);
+
+INSERT INTO _variables (name) VALUES ('max_lat');
+UPDATE _variables SET value = (SELECT (SELECT MAX(GEO_LAT) FROM crimestst01 LIMIT 1)) WHERE name = 'max_lat';
+
+INSERT INTO _variables (name) VALUES ('min_lat');
+UPDATE _variables SET value = (SELECT (SELECT MIN(GEO_LAT) FROM crimestst01 LIMIT 1)) WHERE name = 'min_lat';
+
+INSERT INTO _variables (name) VALUES ('max_lon');
+UPDATE _variables SET value = (SELECT (SELECT MAX(GEO_LON) FROM crimestst01 LIMIT 1)) WHERE name = 'max_lon';
+
+INSERT INTO _variables (name) VALUES ('min_lon');
+UPDATE _variables SET value = (SELECT (SELECT MIN(GEO_LON) FROM crimestst01 LIMIT 1)) WHERE name = 'min_lon';
+
+INSERT INTO _variables (name) VALUES ('mean_lat');
+UPDATE _variables SET value = (SELECT ((SELECT value FROM _variables WHERE name = 'max_lat' LIMIT 1) + (SELECT value FROM _variables WHERE name = 'min_lat' LIMIT 1)) / 2) WHERE name = 'mean_lat';
+
+INSERT INTO _variables (name) VALUES ('mean_lon');
+UPDATE _variables SET value = (SELECT ((SELECT value FROM _variables WHERE name = 'max_lon' LIMIT 1) + (SELECT value FROM _variables WHERE name = 'min_lon' LIMIT 1)) / 2) WHERE name = 'mean_lon';
+
+-- Julian time to Epoch MS     
+SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+
+ALTER TABLE crimestst01 ADD COLUMN region text default "";
+
+UPDATE crimestst01
+    SET region = "A"
+    WHERE GEO_LAT < (SELECT value FROM _variables WHERE name = "mean_lat" limit 1)
+        AND GEO_LON < (SELECT value FROM _variables WHERE name = "mean_lon" limit 1);
+
+UPDATE crimestst01
+    SET region = "B"
+    WHERE GEO_LAT < (SELECT value FROM _variables WHERE name = "mean_lat" limit 1)
+        AND GEO_LON >= (SELECT value FROM _variables WHERE name = "mean_lon" limit 1);
+
+UPDATE crimestst01
+    SET region = "C"
+    WHERE GEO_LAT >= (SELECT value FROM _variables WHERE name = "mean_lat" limit 1) AND GEO_LON < (SELECT value FROM _variables WHERE name = "mean_lon" limit 1);
+
+UPDATE crimestst01
+    SET region = "D"
+    WHERE GEO_LAT >= (SELECT value FROM _variables WHERE name = "mean_lat" limit 1)
+        AND GEO_LON >= (SELECT value FROM _variables WHERE name = "mean_lon" limit 1);
+
+-- Julian time to Epoch MS     
+SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+
+SELECT region, count(*) from crimestst01 group by region;
+
+-- Julian time to Epoch MS     
+SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+
+select * from _variables;
+
+END;

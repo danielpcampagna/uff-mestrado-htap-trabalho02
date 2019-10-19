@@ -1,0 +1,91 @@
+> use denver
+switched to db denver
+> 
+> db.adminCommand('top').totals["denver.crimes"]
+{
+        "total" : {
+                "time" : 34243569,
+                "count" : 302
+        },
+        "readLock" : {
+                "time" : 34241229,
+                "count" : 296
+        },
+        "writeLock" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "queries" : {
+                "time" : 25961893,
+                "count" : 78
+        },
+        "getmore" : {
+                "time" : 7083178,
+                "count" : 188
+        },
+        "insert" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "update" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "remove" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "commands" : {
+                "time" : 1198498,
+                "count" : 36
+        }
+}
+> 
+> db.crimes.aggregate([{ $group: {_id: "$DISTRICT_ID" , total: { $sum: 1 } } }])
+{ "_id" : 1, "total" : 90223 }
+{ "_id" : 4, "total" : 72442 }
+{ "_id" : 6, "total" : 103229 }
+{ "_id" : 3, "total" : 113404 }
+{ "_id" : 2, "total" : 75085 }
+{ "_id" : 7, "total" : 5960 }
+{ "_id" : 5, "total" : 52311 }
+> 
+> db.adminCommand('top').totals["denver.crimes"]
+{
+        "total" : {
+                "time" : 34243686,
+                "count" : 303
+        },
+        "readLock" : {
+                "time" : 34241346,
+                "count" : 297
+        },
+        "writeLock" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "queries" : {
+                "time" : 25961893,
+                "count" : 78
+        },
+        "getmore" : {
+                "time" : 7083178,
+                "count" : 188
+        },
+        "insert" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "update" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "remove" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "commands" : {
+                "time" : 1198615,
+                "count" : 37
+        }
+}

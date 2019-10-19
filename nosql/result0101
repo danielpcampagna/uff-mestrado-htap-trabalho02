@@ -1,0 +1,287 @@
+> use denver
+switched to db denver
+> show collections
+crimes
+crimestst02
+tst
+> db.createCollection('crimestst01')
+{ "ok" : 1 }
+> db.crimes.find({GEO_LAT: {$nin: ["", null]}, GEO_LON: {$nin: ["", null]}}).forEach(function(doc) { db.crimestst01.insert(doc) }
+);
+> db.adminCommand('top').totals["denver.crimestst01"]
+{
+        "total" : {
+                "time" : 23953376,
+                "count" : 508416
+        },
+        "readLock" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "writeLock" : {
+                "time" : 23819815,
+                "count" : 508415
+        },
+        "queries" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "getmore" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "insert" : {
+                "time" : 23819815,
+                "count" : 508415
+        },
+        "update" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "remove" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "commands" : {
+                "time" : 133561,
+                "count" : 1
+        }
+}
+> 
+> db.crimes.find().count() - db.crimestst01.find().count()
+4239
+> 
+> db.adminCommand('top').totals["denver.crimestst01"]
+{
+        "total" : {
+                "time" : 23953424,
+                "count" : 508417
+        },
+        "readLock" : {
+                "time" : 48,
+                "count" : 1
+        },
+        "writeLock" : {
+                "time" : 23819815,
+                "count" : 508415
+        },
+        "queries" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "getmore" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "insert" : {
+                "time" : 23819815,
+                "count" : 508415
+        },
+        "update" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "remove" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "commands" : {
+                "time" : 133609,
+                "count" : 2
+        }
+}
+> 
+> const max_lat = db.crimestst01.find({}, {"GEO_LAT": 1}).sort({"GEO_LAT":-1}).limit(1)[0]
+> 
+> const min_lat = db.crimestst01.find({}, {"GEO_LAT": 1}).sort({"GEO_LAT":1}).limit(1)[0]
+> 
+> const max_lon = db.crimestst01.find({}, {"GEO_LON": 1}).sort({"GEO_LON":-1}).limit(1)[0]
+> 
+> const min_lon = db.crimestst01.find({}, {"GEO_LON": 1}).sort({"GEO_LON":1}).limit(1)[0]
+> 
+> const mean_lat = (max_lat['GEO_LAT'] + min_lat['GEO_LAT']) / 2
+> 
+> const mean_lon = (max_lon['GEO_LON'] + min_lon['GEO_LON']) / 2
+> 
+> db.adminCommand('top').totals["denver.crimestst01"]
+{
+        "total" : {
+                "time" : 26521471,
+                "count" : 508421
+        },
+        "readLock" : {
+                "time" : 2568095,
+                "count" : 5
+        },
+        "writeLock" : {
+                "time" : 23819815,
+                "count" : 508415
+        },
+        "queries" : {
+                "time" : 2568047,
+                "count" : 4
+        },
+        "getmore" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "insert" : {
+                "time" : 23819815,
+                "count" : 508415
+        },
+        "update" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "remove" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "commands" : {
+                "time" : 133609,
+                "count" : 2
+        }
+}
+> 
+> db.crimestst01.update(
+...     {},
+...     { $set: {'region': '' }},
+...     { multi: true }
+... )
+WriteResult({ "nMatched" : 508415, "nUpserted" : 0, "nModified" : 508415 })
+> 
+> db.crimestst01.update({
+...     GEO_LAT: { $lt: mean_lat }, GEO_LON: { $lt: mean_lon }
+...     }, { $set: {'region':'A'}},
+...     { multi: true }
+... )
+WriteResult({ "nMatched" : 0, "nUpserted" : 0, "nModified" : 0 })
+> 
+> db.crimestst01.update({
+...     GEO_LAT: { $lt: mean_lat }, GEO_LON: { $gte: mean_lon }
+...     }, { $set: {'region':'B'}},
+...     { multi: true }
+... )
+WriteResult({ "nMatched" : 174, "nUpserted" : 0, "nModified" : 174 })
+> 
+> db.crimestst01.update({
+...     GEO_LAT: { $gte: mean_lat }, GEO_LON: { $lt: mean_lon }
+...     }, { $set: {'region':'C'}},
+...     { multi: true }
+... )
+WriteResult({ "nMatched" : 508241, "nUpserted" : 0, "nModified" : 508241 })
+> 
+> db.crimestst01.update({
+...     GEO_LAT: { $gte: mean_lat }, GEO_LON: { $gte: mean_lon }
+...     }, { $set: {'region':'D'}},
+...     { multi: true }
+... )
+WriteResult({ "nMatched" : 0, "nUpserted" : 0, "nModified" : 0 })
+> 
+> db.adminCommand('top').totals["denver.crimestst01"]
+{
+        "total" : {
+                "time" : 52231290,
+                "count" : 508426
+        },
+        "readLock" : {
+                "time" : 2568095,
+                "count" : 5
+        },
+        "writeLock" : {
+                "time" : 49529634,
+                "count" : 508420
+        },
+        "queries" : {
+                "time" : 2568047,
+                "count" : 4
+        },
+        "getmore" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "insert" : {
+                "time" : 23819815,
+                "count" : 508415
+        },
+        "update" : {
+                "time" : 25709819,
+                "count" : 5
+        },
+        "remove" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "commands" : {
+                "time" : 133609,
+                "count" : 2
+        }
+}
+> 
+> db.crimestst01.aggregate({
+...     $group: {
+...        _id: '$region',
+...        count: { $sum: 1 }
+...     }
+... });
+{ "_id" : "C", "count" : 508241 }
+{ "_id" : "B", "count" : 174 }
+> 
+> db.adminCommand('top').totals["denver.crimestst01"]
+{
+        "total" : {
+                "time" : 52231472,
+                "count" : 508427
+        },
+        "readLock" : {
+                "time" : 2568277,
+                "count" : 6
+        },
+        "writeLock" : {
+                "time" : 49529634,
+                "count" : 508420
+        },
+        "queries" : {
+                "time" : 2568047,
+                "count" : 4
+        },
+        "getmore" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "insert" : {
+                "time" : 23819815,
+                "count" : 508415
+        },
+        "update" : {
+                "time" : 25709819,
+                "count" : 5
+        },
+        "remove" : {
+                "time" : 0,
+                "count" : 0
+        },
+        "commands" : {
+                "time" : 133791,
+                "count" : 3
+        }
+}
+> 
+> max_lat
+{ "_id" : ObjectId("5da0dd55e66b3f01d0365bce"), "GEO_LAT" : 39.9043105 }
+> 
+> min_lat
+{ "_id" : ObjectId("5da0dd4fe66b3f01d0338324"), "GEO_LAT" : 0.0000012 }
+> 
+> mean_lat
+19.95215585
+> 
+> max_lon
+{ "_id" : ObjectId("5da0dd57e66b3f01d036c90c"), "GEO_LON" : -0.0000013 }
+> 
+> min_lon
+{ "_id" : ObjectId("5da0dd50e66b3f01d0345481"), "GEO_LON" : -115.4640602 }
+> 
+> mean_lon
+-57.73203075
+> 

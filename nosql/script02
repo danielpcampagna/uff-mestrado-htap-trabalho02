@@ -1,0 +1,64 @@
+use denver
+
+db.crimestst02.drop()
+
+db.createCollection('crimestst02')
+
+db.crimes.find({GEO_LAT: {$nin: ["", null]}, GEO_LON: {$nin: ["", null]}}).forEach(function(doc) { db.crimestst02.insert(doc) });
+
+db.adminCommand('top').totals["denver.crimestst02"]
+
+db.crimes.find().count() - db.crimestst02.find().count()
+
+db.adminCommand('top').totals["denver.crimestst02"]
+
+db.crimestst02.createIndex({ GEO_LAT:1 })
+
+db.crimestst02.createIndex({ GEO_LON:1 })
+
+const median_lat = db.crimestst02.find({}, {GEO_LAT: 1}).sort( {"GEO_LAT":1} ).skip(db.crimestst02.count() / 2 - 1).limit(1)[0]
+
+const median_lon = db.crimestst02.find({}, {GEO_LON: 1}).sort( {"GEO_LON":1} ).skip(db.crimestst02.count() / 2 - 1).limit(1)[0]
+
+db.adminCommand('top').totals["denver.crimestst02"]
+
+db.crimestst02.update(
+    {},
+    { $set: {'region': '' }},
+    { multi: true }
+)
+
+db.crimestst02.update({
+    GEO_LAT: { $lt: median_lat['GEO_LAT'] }, GEO_LON: { $lt: median_lon['GEO_LON'] }
+    }, { $set: {'region':'A'}},
+    { multi: true }
+)
+
+db.crimestst02.update({
+    GEO_LAT: { $lt: median_lat['GEO_LAT'] }, GEO_LON: { $gte: median_lon['GEO_LON'] }
+    }, { $set: {'region':'B'}},
+    { multi: true }
+)
+
+db.crimestst02.update({
+    GEO_LAT: { $gte: median_lat['GEO_LAT'] }, GEO_LON: { $lt: median_lon['GEO_LON'] }
+    }, { $set: {'region':'C'}},
+    { multi: true }
+)
+
+db.crimestst02.update({
+    GEO_LAT: { $gte: median_lat['GEO_LAT'] }, GEO_LON: { $gte: median_lon['GEO_LON'] }
+    }, { $set: {'region':'D'}},
+    { multi: true }
+)
+
+db.adminCommand('top').totals["denver.crimestst02"]
+
+db.crimestst02.aggregate({
+    $group: {
+       _id: '$region',
+       count: { $sum: 1 }
+    }
+});
+
+db.adminCommand('top').totals["denver.crimestst02"]

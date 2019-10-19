@@ -1,0 +1,11 @@
+.open denverdb
+
+.timer on
+
+-- Julian time to Epoch MS     
+SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 
+
+SELECT PRECINCT_ID, count(*) from crimes group by PRECINCT_ID;
+
+-- Julian time to Epoch MS     
+SELECT CAST((julianday('now') - 2440587.5)*86400000 AS INTEGER); 

@@ -1,0 +1,9 @@
+mongoimport -d denver -c crimes --type csv --file ./denver-crime-data/crime.csv --headerline -v
+2019-10-18T22:07:06.514-0300    using write concern: &{majority false 0}
+2019-10-18T22:07:06.886-0300    filesize: 0 bytes
+2019-10-18T22:07:06.886-0300    Failed: EOF
+2019-10-18T22:07:06.886-0300    0 document(s) imported successfully. 0 document(s) failed to import.
+
+sudo service mongod start
+
+mongo
